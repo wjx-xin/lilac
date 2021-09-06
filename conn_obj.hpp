@@ -10,8 +10,9 @@ private:
     Buffer *recvBuf;
     Buffer *sendBuf;
 public:
-    ConnObj(){}
-    ConnObj(int s):_socket(s){}
+    ConnObj();
+    ConnObj(int s);
+    ~ConnObj();
 	int GetSocket() const { return _socket; }
 	void Recv();
 	void Send();
@@ -21,6 +22,16 @@ public:
 	int SendBufLength() const{return sendBuf->GetLength();}
 };
 
+ConnObj::ConnObj(int s):_socket(s)
+{
+    recvBuf = new Buffer();
+    sendBuf = new Buffer();
+}
+ConnObj::~ConnObj()
+{
+    delete recvBuf;
+    delete sendBuf;
+}
 void ConnObj::Recv()
 {
     char* buf = new char[RW_SIZE];
@@ -29,8 +40,10 @@ void ConnObj::Recv()
         int len = recv(_socket,buf,RW_SIZE,0);
         if(len == -1 || len == 0) break; // 后期可以根据错误码，分类处理
         recvBuf->Save(buf,len);
+        recvBuf->get();
         memset(buf,0,RW_SIZE);
     }
+    
     delete []buf;
 }
 
@@ -54,6 +67,7 @@ void ConnObj::Send()
         }
         memset(buf,0,RW_SIZE);
     }
+    delete []buf;
 }
 
 void ConnObj::Write(char* data,int size)

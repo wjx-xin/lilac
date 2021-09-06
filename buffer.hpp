@@ -1,4 +1,5 @@
 #include<cstring>
+#include<string>
 class Buffer
 {
 private:
@@ -11,13 +12,13 @@ private:
     void copy(char* dest,int size); // copy to dest
     void ReMalloc(int size); // 
 public:
-    // void get(){ //调试用
-    //     printf("begin-%d end-%d len-%d bufsize-%d\n",begin,end,dataLength,bufferSize);
-    //     for(int i = begin;i < begin+dataLength;i++) 
-    //         printf("%c",_buffer[i]);
-    //     printf("\n");
-    // }
-    Buffer(){}
+    void get(){ //调试用
+        printf("begin-%d end-%d len-%d bufsize-%d\n",begin,end,dataLength,bufferSize);
+        for(int i = begin;i < begin+dataLength;i++) 
+            printf("%c",_buffer[i]);
+        printf("\n");
+    }
+    Buffer();
     Buffer(int size);
     ~Buffer();
     void Save(char* data,int size);
@@ -25,6 +26,11 @@ public:
     int GetLength() const {return dataLength;} //获取数据长度
     
 };
+Buffer::Buffer():begin(0),end(-1)
+{
+    _buffer = new char[1024];
+    bufferSize = 1024;
+}
 Buffer::Buffer(int size):bufferSize(size),begin(0),end(-1),dataLength(0)
 {
     _buffer = new char[size];
@@ -68,7 +74,16 @@ void Buffer::Save(char* data,int size)
     }
 
     end = (end + size) % bufferSize;
-    dataLength = (end + bufferSize - begin + 1) % bufferSize;
+    if(end == bufferSize - 1 && begin == 0)
+    {
+        dataLength = bufferSize;
+    }
+    else
+    {
+        dataLength = (end + bufferSize - begin + 1) % bufferSize;
+        // 若end在数组末尾，会导致dataLength = 2*bufferSize%bufferSize
+    }
+    // dataLength = (end + bufferSize - begin + 1) % bufferSize;
 }
 
 void Buffer::Read(char* buf,int size,int* realSize)

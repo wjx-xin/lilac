@@ -21,9 +21,9 @@ httpResponse::httpResponse(){}
 httpResponse::httpResponse(int statusCode,const char* statusMsg,const char* contentType,const char* body){
     this->statusCode = statusCode;
 
-    this->statusMsg = new char[strlen(statusMsg)];
-    this->contentType = new char [strlen(contentType)];
-    this->body = new char [strlen(body)];
+    this->statusMsg = new char[strlen(statusMsg)+1];
+    this->contentType = new char [strlen(contentType)+1];
+    this->body = new char [strlen(body)+1];
     strcpy(this->statusMsg,statusMsg);
     strcpy(this->contentType,contentType);
     strcpy(this->body,body);

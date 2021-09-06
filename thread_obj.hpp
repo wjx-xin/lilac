@@ -54,7 +54,8 @@ void ThreadObj:: WorkerLoop(ThreadObj* p)
     p->InitEpoll();
     while (true)
     {
-        int nfds = p->EpollWait(100);
+        int nfds = p->EpollWait(1000);
+        // printf("//=%d--\n",nfds);
         for(int i = 0;i < nfds;i++)
         {
             // ConnObj* c = p->connDict[p->events[i].data.fd];
@@ -62,20 +63,31 @@ void ThreadObj:: WorkerLoop(ThreadObj* p)
             // char buf[10]="hello";
             // c->Write(buf,10);
             // c->Send();
+            // printf("!!**&&//=%d--\n",nfds);
+
+            p->connDict[p->events[i].data.fd]->Recv();
             httpResponse* httpR = new httpResponse(200,"OK","text/plain","hello, network programming");
             char* sendBuf = httpR->makePacket();
             send(p->events[i].data.fd,sendBuf,1024,0);
             delete httpR;
         }
         // 下面这段是添加新的fd到epoll红黑树上
-        int fd = p->Pop();
-        if(fd > 0)
+        while(true)
         {
-            p->EpollAdd(fd,EPOLLIN | EPOLLET);
-            ConnObj* pConn = new ConnObj(fd);
-            p->connDict.insert(std::make_pair(fd,pConn));
-            p->number ++;
+            int fd = p->Pop();
+            if(fd > 0)
+            {
+                p->EpollAdd(fd,EPOLLIN | EPOLLET);
+                ConnObj* pConn = new ConnObj(fd);
+                p->connDict.insert(std::make_pair(fd,pConn));
+                p->number ++;
+            }
+            else
+            {
+                break;
+            }
         }
+        
     }
     
 }
