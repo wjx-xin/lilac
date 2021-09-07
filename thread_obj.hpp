@@ -64,12 +64,14 @@ void ThreadObj:: WorkerLoop(ThreadObj* p)
             // c->Write(buf,10);
             // c->Send();
             // printf("!!**&&//=%d--\n",nfds);
-
+            // std::cout << std::this_thread::get_id()<<std::endl;
+            // sleep(2);
             p->connDict[p->events[i].data.fd]->Recv();
             httpResponse* httpR = new httpResponse(200,"OK","text/plain","hello, network programming");
             char* sendBuf = httpR->makePacket();
             send(p->events[i].data.fd,sendBuf,1024,0);
             delete httpR;
+            close(p->events[i].data.fd);
         }
         // 下面这段是添加新的fd到epoll红黑树上
         while(true)

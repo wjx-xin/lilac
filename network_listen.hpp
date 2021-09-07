@@ -20,7 +20,7 @@ public:
 NetworkListen::NetworkListen()
 {
     _threadMgr = new ThreadManager();
-    _threadMgr->Create(1);
+    _threadMgr->Create(2);
 }
 NetworkListen::~NetworkListen()
 {

@@ -71,7 +71,14 @@ void ThreadManager::Distribute()
         int conn = Pop();
         if(conn != -1)
         {
-            _threads.begin()->first->Push(conn);
+            ThreadObj* t = _threads.begin()->first;
+            for(auto itr = _threads.begin();itr != _threads.end();itr++)
+            {
+                if(_threads[itr->first] < _threads[t]) t = itr->first;
+            }
+            t->Push(conn);
+            _threads[t]++;
+            // _threads.begin()->first->Push(conn);
         }
         else 
         {
