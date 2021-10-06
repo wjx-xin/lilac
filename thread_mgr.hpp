@@ -4,15 +4,18 @@
 #include<map>
 #include<mutex>
 #include<queue>
+#include<vector>
 class ThreadManager
 {
 private:
     /* data */
     // std::list<std::thread*>threadList;
     std::queue<int>connQueue;
-    std::map<ThreadObj*,int> _threads; 
+    // std::map<ThreadObj*,int> _threads; 
+    std::vector<ThreadObj*> _threads;
     int number; // 线程数量 
     std::mutex mtx;
+    
 public:
     ThreadManager(/* args */);
     ~ThreadManager();
@@ -25,7 +28,6 @@ public:
 
 ThreadManager::ThreadManager(/* args */)
 {
-    
 }
 
 ThreadManager::~ThreadManager()
@@ -33,12 +35,13 @@ ThreadManager::~ThreadManager()
 }
 void ThreadManager::Create(int n = 1)
 {
+    number = n;
     for(int i = 0;i < n;i++)
     {
         ThreadObj* t = new ThreadObj;
-        _threads.insert(std::make_pair(t,0));
+        // _threads.insert(std::make_pair(t,0));
+        _threads.push_back(t);
         t->Run();
-        
     }
 }
 
@@ -71,14 +74,16 @@ void ThreadManager::Distribute()
         int conn = Pop();
         if(conn != -1)
         {
-            ThreadObj* t = _threads.begin()->first;
-            for(auto itr = _threads.begin();itr != _threads.end();itr++)
-            {
-                if(_threads[itr->first] < _threads[t]) t = itr->first;
-            }
-            t->Push(conn);
-            _threads[t]++;
-            // _threads.begin()->first->Push(conn);
+            // ThreadObj* t = _threads.begin()->first;
+            // for(auto itr = _threads.begin();itr != _threads.end();itr++)
+            // {
+            //     if(_threads[itr->first] < _threads[t]) t = itr->first;
+            // }
+            // t->Push(conn);
+            // _threads[t]++;
+            // // _threads.begin()->first->Push(conn);
+
+            _threads[conn%number]->Push(conn);
         }
         else 
         {

@@ -5,6 +5,8 @@ class Server
 {
 public:
     void Run(const char *ip,int port);
+    void Run(int port);
+
 };
 
 void Server::Run(const char *ip,int port)
@@ -19,4 +21,9 @@ void Server::Run(const char *ip,int port)
     {
         int nfds = _net.EpollWait(100);
     }
+}
+
+void Server::Run(int port)
+{
+    Run("0.0.0.0",port);
 }

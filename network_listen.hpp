@@ -8,12 +8,15 @@ class NetworkListen:public Network
 {
 private:
     void Accept();
+private:
+    // int listenfd;
     ThreadManager* _threadMgr;
 public:
     void Listen(const char* ip,int port);
     void Update();
     int EpollWait(int timeout);
     NetworkListen();
+    NetworkListen(int threadNumber);
     ~NetworkListen();
 };
 
@@ -21,6 +24,11 @@ NetworkListen::NetworkListen()
 {
     _threadMgr = new ThreadManager();
     _threadMgr->Create(2);
+}
+NetworkListen::NetworkListen(int threadNumber)
+{
+    _threadMgr = new ThreadManager();
+    _threadMgr->Create(threadNumber);
 }
 NetworkListen::~NetworkListen()
 {
