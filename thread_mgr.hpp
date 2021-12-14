@@ -21,7 +21,9 @@ public:
     ~ThreadManager();
     void Create(int n); // 创建线程类
     void Distribute(); // 分配
-
+    int getQueueSize() const {
+    	return connQueue.size();
+    }
     void Push(int conn);
     int Pop();
 };
@@ -47,27 +49,27 @@ void ThreadManager::Create(int n = 1)
 
 void ThreadManager::Push(int conn)
 {
-    mtx.lock();
+//    mtx.lock();
     connQueue.push(conn);
     
-    mtx.unlock();
+//    mtx.unlock();
 }
 
 int ThreadManager::Pop()
 {
     int r = -1;
-    mtx.lock();
+//    mtx.lock();
     if(!connQueue.empty())
     {
         r = connQueue.front();
         connQueue.pop();
     }
-    mtx.unlock();
+//    mtx.unlock();
     return r;
 }
 
 void ThreadManager::Distribute()
-{
+{printf("mgr queue %ld\n",connQueue.size());
     // 验证性的，后续再改
     while(true)
     {
@@ -83,7 +85,12 @@ void ThreadManager::Distribute()
             // _threads[t]++;
             // // _threads.begin()->first->Push(conn);
 
-            _threads[conn%number]->Push(conn);
+            if(_threads[conn%number]->getLock()) {
+	    	_threads[conn%number]->Push(conn);
+		_threads[conn%number]->releaseLock();
+	    } else {
+	    	Push(conn);
+	    }
         }
         else 
         {

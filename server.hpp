@@ -20,6 +20,7 @@ void Server::Run(const char *ip,int port)
     while(true)
     {
         int nfds = _net.EpollWait(100);
+	//printf("server::run\n");
     }
 }
 

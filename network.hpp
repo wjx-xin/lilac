@@ -18,7 +18,7 @@ class Network
 {
 protected:
     int epfd;
-    int MAX_SIZE = 4096;
+    int MAX_SIZE = 102400;
     // struct epoll_event* events;
     int listenfd; // 考虑移到NetworkListen类中
     std::map<int, ConnObj*> connDict; // socket-ConnObj
@@ -75,7 +75,7 @@ void Network::EpollDel(int fd)
     epoll_ctl(epfd,EPOLL_CTL_DEL,fd,nullptr);
 }
 
-int Network::EpollWait(int timeout = -1)
+int Network::EpollWait(int timeout = 100)
 {
     int nfds = epoll_wait(epfd,events,MAX_SIZE,timeout);
     return nfds;

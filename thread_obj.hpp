@@ -24,6 +24,13 @@ public:
     void Push(int conn);
     int Pop();
     int GetChanelSize();
+    bool getLock() {
+    	int r = mtx.try_lock();
+	return r;
+    }
+    void releaseLock(){
+    	mtx.unlock();
+    }
 };
 
 ThreadObj::ThreadObj()
@@ -49,12 +56,14 @@ void ThreadObj::Run()
     _thread = new std::thread(WorkerLoop,this);
     _thread->detach();
 }
+#include<iostream>
 void ThreadObj:: WorkerLoop(ThreadObj* p)
 {
+	char b[1024];
     p->InitEpoll();
     while (true)
-    {
-        int nfds = p->EpollWait(1000);
+    {//printf("thread_id %ld  ,and the queue size is %d \n", std::this_thread::get_id(),p->chanel.size());
+        int nfds = p->EpollWait(100);
         // printf("//=%d--\n",nfds);
         for(int i = 0;i < nfds;i++)
         {
@@ -66,16 +75,21 @@ void ThreadObj:: WorkerLoop(ThreadObj* p)
             // printf("!!**&&//=%d--\n",nfds);
             // std::cout << std::this_thread::get_id()<<std::endl;
             // sleep(2);
-            p->connDict[p->events[i].data.fd]->Recv();
+	    recv(p->events[i].data.fd,b,1024,0);
+            //p->connDict[p->events[i].data.fd]->Recv();
             httpResponse* httpR = new httpResponse(200,"OK","text/plain","hello, network programming");
             char* sendBuf = httpR->makePacket();
             send(p->events[i].data.fd,sendBuf,1024,0);
+	    //printf("hello world\n");
             delete httpR;
             close(p->events[i].data.fd);
         }
         // 下面这段是添加新的fd到epoll红黑树上
-        while(true)
+        if(!p->chanel.empty()){
+	p->mtx.lock();
+	while(true)
         {
+		
             int fd = p->Pop();
             if(fd > 0)
             {
@@ -89,6 +103,8 @@ void ThreadObj:: WorkerLoop(ThreadObj* p)
                 break;
             }
         }
+	p->mtx.unlock();
+	}
         
     }
     
@@ -96,21 +112,21 @@ void ThreadObj:: WorkerLoop(ThreadObj* p)
 
 void ThreadObj::Push(int conn)
 {
-    mtx.lock();
+    //mtx.lock();
     chanel.push(conn);
-    mtx.unlock();
+   // mtx.unlock();
 }
 
 int ThreadObj::Pop()
 {
     int r = -1;
-    mtx.lock();
-    if(!chanel.empty())
-    {
-        r = chanel.front();
-        chanel.pop();
-    }
-    mtx.unlock();
+    
+    	if(!chanel.empty())
+    	{
+        	r = chanel.front();
+        	chanel.pop();
+    	}
+    
     return r;
 }
 

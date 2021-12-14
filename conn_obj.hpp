@@ -40,8 +40,9 @@ void ConnObj::Recv()
         int len = recv(_socket,buf,RW_SIZE,0);
         if(len == -1 || len == 0) break; // 后期可以根据错误码，分类处理
         recvBuf->Save(buf,len);
-        recvBuf->get();
-        memset(buf,0,RW_SIZE);
+//        recvBuf->get();
+  	printf("hello world\n");
+  	memset(buf,0,RW_SIZE);
     }
     
     delete []buf;

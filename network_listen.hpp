@@ -45,31 +45,35 @@ void NetworkListen::Listen(const char* ip,int port)
         perror("bind error");
         exit(1);
     }
-    if(listen(listenfd,SOMAXCONN) == -1) {
+    if(listen(listenfd,10240) == -1) {
         perror("listen error");
         exit(1);
     }
 }
 
 void NetworkListen::Accept()
-{
+{int i = 0;
     struct sockaddr_in client_addr;
     socklen_t len = sizeof(client_addr);
     while (true)
-    {
+    {printf("%d \n",i++);
+	    printf("begin accept\n");
         int conn = accept(listenfd,(struct sockaddr*)&client_addr,&len);
+	printf("accept success\n");
         if(conn == -1)
         {
             if(errno == EWOULDBLOCK) break; // 连接已经读完
             else if(errno == EINTR) continue; // 被信号中断
-            else{}
+            else{break;}
         }
         else
         {
             int flags = fcntl(conn, F_GETFL, 0); 
             fcntl(conn, F_SETFL, flags | O_NONBLOCK);
             _threadMgr->Push(conn);
-
+	   // if(_threadMgr->getQueueSize()>800) {
+	   // 	_threadMgr->Distribute();
+	   // }
             // to debug and will delete after finished
             // httpResponse* httpR = new httpResponse(200,"OK","text/plain","hello, network programming");
             // char* sendBuf = httpR->makePacket();
@@ -86,7 +90,7 @@ void NetworkListen::Accept()
 }
 
 int NetworkListen::EpollWait(int timeout = -1)
-{
+{int j = 0;//printf("main thread conn queue size is %d\n",_threadMgr->getQueueSize());
     int nfds = epoll_wait(epfd,events,MAX_SIZE,timeout);
     // 目前nfds应该只会是1，后面再一个ipc_fd，用于退出或者唤醒
     for(int i = 0;i < nfds;i++)
@@ -96,6 +100,7 @@ int NetworkListen::EpollWait(int timeout = -1)
             Accept();
         }
         _threadMgr->Distribute();
+	printf("j %d\n",j);
 
     }
     return nfds;
