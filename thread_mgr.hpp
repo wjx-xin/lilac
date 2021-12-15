@@ -1,5 +1,3 @@
-// #include<thread>
-// #include<list>
 #include"thread_obj.hpp"
 #include<map>
 #include<mutex>
@@ -49,54 +47,52 @@ void ThreadManager::Create(int n = 1)
 
 void ThreadManager::Push(int conn)
 {
-//    mtx.lock();
     connQueue.push(conn);
-    
-//    mtx.unlock();
 }
 
 int ThreadManager::Pop()
 {
     int r = -1;
-//    mtx.lock();
     if(!connQueue.empty())
     {
         r = connQueue.front();
         connQueue.pop();
     }
-//    mtx.unlock();
     return r;
 }
 
 void ThreadManager::Distribute()
-{printf("mgr queue %ld\n",connQueue.size());
+{
     // 验证性的，后续再改
     while(true)
     {
         int conn = Pop();
         if(conn != -1)
         {
-            // ThreadObj* t = _threads.begin()->first;
-            // for(auto itr = _threads.begin();itr != _threads.end();itr++)
-            // {
-            //     if(_threads[itr->first] < _threads[t]) t = itr->first;
-            // }
-            // t->Push(conn);
-            // _threads[t]++;
-            // // _threads.begin()->first->Push(conn);
-
             if(_threads[conn%number]->getLock()) {
-	    	_threads[conn%number]->Push(conn);
-		_threads[conn%number]->releaseLock();
-	    } else {
-	    	Push(conn);
-	    }
+                _threads[conn%number]->Push(conn);
+                _threads[conn%number]->releaseLock();
+            } else {
+                Push(conn);
+            }
         }
         else 
         {
             break;
         }
     }
+    // 待测试
+    // int conn = Pop();
+    // while (conn != -1)
+    // {
+    //     if(_threads[conn%number]->getLock()) {
+    //         _threads[conn%number]->Push(conn);
+    //         _threads[conn%number]->releaseLock();
+    //     } else {
+    //         Push(conn);
+    //     }
+    //     conn = Pop();
+    // }
     
     
 }
